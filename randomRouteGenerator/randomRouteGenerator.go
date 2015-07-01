@@ -6,6 +6,8 @@ import(
   "time"
   "fmt"
   "errors"
+  "encoding/json"
+  "github.com/kpawlik/geojson"
   "github.com/shashanktomar/turfgo"
 )
 
@@ -110,4 +112,16 @@ func RandomWaypointsWithGivenStrategy(location *turfgo.Point, distance float64,
   }
 
   return generator.createWaypoints(location, distance, unit)
+}
+
+func RandomWaypointsGeoJson(location *turfgo.Point, distance float64, unit string) (string, error){
+  points,err := RandomWaypoints(location, distance, unit)
+  if err != nil{
+    return "", err
+  }
+
+  feature := turfgo.EncodeMultiPointsIntoFeature(points)
+  featureCollection := turfgo.EncodeFeatureCollection([]*geojson.Feature{feature})
+  j, _ := json.Marshal(featureCollection)
+  return fmt.Sprintf(string(j)), nil
 }

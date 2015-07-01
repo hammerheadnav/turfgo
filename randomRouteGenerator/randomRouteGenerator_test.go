@@ -8,11 +8,8 @@ import(
 func TestRandomWaypoints(t *testing.T){
   location := turfgo.NewPoint(39.984, -75.343)
 
-  result, _ := RandomWaypoints(location, 30, "kilometers")
-
-  for _, r := range result{
-    t.Log(r)
-  }
+  result, _ := RandomWaypointsGeoJson(location, 30, "kilometers")
+  t.Log(result)
 }
 
 func TestGenRandomWaypointsError(t *testing.T){

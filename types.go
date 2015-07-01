@@ -7,7 +7,7 @@ var R = map[string]float64{"miles": 3960,
 
 
 type Point struct{
-  latitude float64
+  latitude float64 
   longitude float64
 }
 
