@@ -1,14 +1,13 @@
 package turfgo
 
-var R = map[string]float64{"miles": 3960,
-  "kilometers": 6373,
-  "degrees": 57.2957795,
-  "radians": 1}
-
+var R = map[string]float64{"mi": 3960,
+  "km": 6373,
+  "d": 57.2957795,
+  "r": 1}
 
 type Point struct{
-  latitude float64 
-  longitude float64
+  Lat float64
+  Lng float64
 }
 
 func NewPoint(lat float64, lon float64) *Point{

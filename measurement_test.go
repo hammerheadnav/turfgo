@@ -1,109 +1,141 @@
 package turfgo
 
 import (
-  "testing"
-  "github.com/shashanktomar/turfgo/turfgoMath"
+	"fmt"
+	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestBearing(t *testing.T){
-  point1 := &Point{39.984, -75.343}
-  point2 := &Point{39.123, -75.534}
+func TestBearing(t *testing.T) {
 
-  var expected1 float64 = -170.2330491349224
-  result1 := Bearing(point1, point2)
-  if !turfgoMath.IsEqualFloat(result1, expected1, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %g, Actual: %g", expected1, result1)
-  }
+	Convey("Given two points, should calculate bearing between them", t, func() {
+		point1 := &Point{39.984, -75.343}
+		point2 := &Point{39.123, -75.534}
+		expected1 := -170.2330491349224
+		bearing1 := Bearing(point1, point2)
+		So(bearing1, ShouldEqual, expected1)
 
-  point3 := &Point{12.9715987, 77.59456269999998}
-  point4 := &Point{13.22328378, 77.77448784}
+		point3 := &Point{12.9715987, 77.59456269999998}
+		point4 := &Point{13.22328378, 77.77448784}
+		expected2 := 34.828578946361255
+		bearing2 := Bearing(point3, point4)
+		So(bearing2, ShouldEqual, expected2)
+	})
 
-  var expected2 float64 = 34.828578946361255
-  result2 := Bearing(point3, point4)
-  if !turfgoMath.IsEqualFloat(result2, expected2, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %g, Actual: %g", expected2, result2)
-  }
 }
 
-func TestDestinationForError(t *testing.T){
-  startingPoint := &Point{39.984, -75.343}
-  if _, ok := Destination(startingPoint, 32, 120, "invalidUnit"); ok == nil{
-    t.Errorf("Should through an error if unit is not valid")
-  }
+func TestDestination(t *testing.T) {
+
+	Convey("Given a wrong unit, should throw error", t, func() {
+		startingPoint := &Point{39.984, -75.343}
+		_, err := Destination(startingPoint, 32, 120, "invalidUnit")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
+	})
+
+	Convey("Should return correct destination", t, func() {
+
+		Convey("Given miles unit", func() {
+			startingPoint := &Point{39.984, -75.343}
+			expected := &Point{39.74662966576427, -75.81645928866797}
+
+			dest, err := Destination(startingPoint, 30, -123, "mi")
+			So(err, ShouldBeNil)
+			So(dest, ShouldResemble, expected)
+		})
+
+		Convey("Given km unit", func() {
+			startingPoint := &Point{39.984, -75.343}
+			expected := &Point{40.01636403124376, -75.20865245149336}
+
+			dest, err := Destination(startingPoint, 12, 72.5, "km")
+			So(err, ShouldBeNil)
+			So(dest, ShouldResemble, expected)
+		})
+
+		Convey("Given radian unit", func() {
+			startingPoint := &Point{39.984, -75.343}
+			expected := &Point{67.3178236932749, -216.61938960828266}
+
+			dest, err := Destination(startingPoint, 1.2, 345, "r")
+			So(err, ShouldBeNil)
+			So(dest, ShouldResemble, expected)
+		})
+
+		Convey("Given degree unit", func() {
+			startingPoint := &Point{39.984, -75.343}
+			expected := &Point{-13.744745983973347, -92.31513759524121}
+
+			dest, err := Destination(startingPoint, 56, 200, "d")
+			So(err, ShouldBeNil)
+			So(dest, ShouldResemble, expected)
+		})
+
+	})
+
 }
 
-func TestDestinationMiles(t *testing.T){
-  startingPoint := &Point{39.984, -75.343}
-  expected := &Point{39.74662966576427, -75.81645928866797}
+func TestDistance(t *testing.T) {
 
-  result, ok := Destination(startingPoint, 30, -123, "miles")
-  if ok != nil{
-    t.Errorf("Error should be nil")
-  }
-  if !turfgoMath.IsEqualFloatPair(result.latitude, result.longitude, expected.latitude, expected.longitude, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %v, Actual: %v", expected, result)
-  }
+	Convey("Given a wrong unit, should throw error", t, func() {
+		point1 := &Point{39.984, -75.343}
+		point2 := &Point{39.97074218352032, -75.4590397138299}
+
+		_, err := Distance(point1, point2, "invalidUnit")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
+	})
+
+	Convey("Should return correct distance", t, func() {
+		point1 := &Point{39.984, -75.343}
+		point2 := &Point{39.97074218352032, -75.4590397138299}
+		expected := 9.999999999999373
+
+		dist, err := Distance(point1, point2, "km")
+		So(err, ShouldBeNil)
+		So(dist, ShouldEqual, expected)
+	})
 }
 
-func TestDestinationKilometers(t *testing.T){
-  startingPoint := &Point{39.984, -75.343}
-  expected := &Point{40.01636403124377, -75.20865245149336}
+func TestAlong(t *testing.T) {
 
-  result, ok := Destination(startingPoint, 12, 72.5, "kilometers")
-  if ok != nil{
-    t.Errorf("Error should be nil")
-  }
-  if !turfgoMath.IsEqualFloatPair(result.latitude, result.longitude, expected.latitude, expected.longitude, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %v, Actual: %v", expected, result)
-  }
-}
+	Convey("Given a wrong unit, should throw error", t, func() {
+		point1 := &Point{39.984, -75.343}
+		point2 := &Point{39.97074218352032, -75.4590397138299}
+		points := []*Point{point1, point2}
 
-func TestDestinationRadians(t *testing.T){
-  startingPoint := &Point{39.984, -75.343}
-  expected := &Point{67.3178236932749, -216.61938960828266}
+		_, err := Along(points, 13, "invalidUnit")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
+	})
 
-  result, ok := Destination(startingPoint, 1.2, 345, "radians")
-  if ok != nil{
-    t.Errorf("Error should be nil")
-  }
-  if !turfgoMath.IsEqualFloatPair(result.latitude, result.longitude, expected.latitude, expected.longitude, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %v, Actual: %v", expected, result)
-  }
-}
+	Convey("Should return a point along distance", t, func() {
+		point1 := &Point{38.878605, -77.031669}
+		point2 := &Point{38.881946, -77.029609}
+		point3 := &Point{38.884084, -77.020339}
+		point4 := &Point{38.885821, -77.025661}
+		point5 := &Point{38.889563, -77.021884}
+		point6 := &Point{38.892368, -77.019824}
+		points := []*Point{point1, point2, point3, point4, point5, point6}
+		expected := &Point{38.885335546214506, -77.02417351582903}
 
-func TestDestinationDegrees(t *testing.T){
-  startingPoint := &Point{39.984, -75.343}
-  expected := &Point{-13.74474598397336, -92.31513759524121}
+		p, err := Along(points, 1, "mi")
+		So(err, ShouldBeNil)
+		So(p, ShouldResemble, expected)
+	})
 
-  result, ok := Destination(startingPoint, 56, 200, "degrees")
-  if ok != nil{
-    t.Errorf("Error should be nil")
-  }
-  if !turfgoMath.IsEqualFloatPair(result.latitude, result.longitude, expected.latitude, expected.longitude, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %v, Actual: %v", expected, result)
-  }
-}
+	Convey("Should return end point if distance longer then linestring", t, func() {
+		point1 := &Point{38.878605, -77.031669}
+		point2 := &Point{38.881946, -77.029609}
+		point3 := &Point{38.884084, -77.020339}
+		point4 := &Point{38.885821, -77.025661}
+		point5 := &Point{38.889563, -77.021884}
+		point6 := &Point{38.892368, -77.019824}
+		points := []*Point{point1, point2, point3, point4, point5, point6}
 
-func TestDistanceError(t *testing.T)  {
-  point1 := &Point{39.984, -75.343}
-  point2 := &Point{39.97074218352032, -75.4590397138299}
-
-  if _, ok := Distance(point1,point2, "invalidUnit"); ok == nil{
-    t.Errorf("Should through an error if unit is not valid")
-  }
-}
-
-func TestDistance(t *testing.T)  {
-  point1 := &Point{39.984, -75.343}
-  point2 := &Point{39.97074218352032, -75.4590397138299}
-  expected := 9.999999999999373
-
-  result, ok := Distance(point1, point2, "kilometers")
-  if ok != nil{
-    t.Errorf("Error should be nil")
-  }
-
-  if !turfgoMath.IsEqualFloat(result, expected, turfgoMath.TwelveDecimalPlaces){
-    t.Errorf("Expected: %g, Actual: %g", expected, result)
-  }
+		p, err := Along(points, 3, "mi")
+		So(err, ShouldBeNil)
+		So(p, ShouldResemble, point6)
+	})
 }
