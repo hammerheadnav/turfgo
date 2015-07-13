@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/shashanktomar/turfgo/turfgoMath"
+	"github.com/hammerheadnav/turfgo/turfgoMath"
 )
 
 var unitError = "%s is not a valid unit. Allowed units are mi(miles), km(kilometers), d(degrees) and r(radians)"
