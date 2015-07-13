@@ -1,4 +1,4 @@
 # turfgo
-Go implementation of turfjs
+Go implementation of [turfjs](http://turfjs.org/)
 
-Its a work on progress to translate turfjs code to golang
+It's a work in progress to translate [turfjs](http://turfjs.org) code to golang
