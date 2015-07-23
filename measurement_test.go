@@ -139,3 +139,36 @@ func TestAlong(t *testing.T) {
 		So(p, ShouldResemble, point6)
 	})
 }
+
+func TestExtent(t *testing.T) {
+
+	Convey("Given an array of points, should return bounding box", t, func() {
+		point1 := &Point{114.175329, 22.2524}
+		point2 := &Point{114.170007, 22.267969}
+		point3 := &Point{114.200649, 22.274641}
+		point4 := &Point{114.186744, 22.265745}
+		points := []*Point{point1, point2, point3, point4}
+
+		bBox := Extent(points)
+		So(bBox[0], ShouldEqual, 114.170007)
+		So(bBox[1], ShouldEqual, 22.2524)
+		So(bBox[2], ShouldEqual, 114.200649)
+		So(bBox[3], ShouldEqual, 22.274641)
+	})
+}
+
+func TestCenter(t *testing.T) {
+
+	Convey("Given an array of points, should return absolute center of points", t, func() {
+		point1 := &Point{-97.522259, 35.4691}
+		point2 := &Point{-97.502754, 35.463455}
+		point3 := &Point{-97.508269, 35.463245}
+		point4 := &Point{-97.516809, 35.465779}
+		point5 := &Point{-97.515372, 35.467072}
+		points := []*Point{point1, point2, point3, point4, point5}
+
+		point := Center(points)
+		So(point.Lat, ShouldEqual, -97.5125065)
+		So(point.Lng, ShouldEqual, 35.4661725)
+	})
+}

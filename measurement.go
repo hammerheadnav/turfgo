@@ -50,6 +50,14 @@ func Bearing(point1, point2 *Point) float64 {
 	return turfgoMath.RadToDegree(math.Atan2(a, b))
 }
 
+// Center takes an array of points and returns the absolute center point of all features.
+func Center(points []*Point) *Point {
+	bBox := Extent(points)
+	lat := (bBox[0] + bBox[2]) / 2
+	lng := (bBox[1] + bBox[3]) / 2
+	return &Point{lat, lng}
+}
+
 // Destination takes a Point and calculates the location of a destination point
 // given a distance in degrees, radians, miles, or kilometers; and bearing in
 // degrees. This uses the Haversine formula to account for global curvature.
@@ -87,4 +95,25 @@ func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
 		math.Sin(dLon/2)*math.Sin(dLon/2)*math.Cos(latRad1)*math.Cos(latRad2)
 	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
 	return radius * c, nil
+}
+
+// Extent takes a set of points, calculates the extent of all input points, and returns a bounding box.
+// Returns []float64 the bounding box of input given as an array in WSEN order (west, south, east, north)
+func Extent(points []*Point) []float64 {
+	extent := []float64{INFINITY, INFINITY, -INFINITY, -INFINITY}
+	for _, point := range points {
+		if extent[0] > point.Lat {
+			extent[0] = point.Lat
+		}
+		if extent[1] > point.Lng {
+			extent[1] = point.Lng
+		}
+		if extent[2] < point.Lat {
+			extent[2] = point.Lat
+		}
+		if extent[3] < point.Lng {
+			extent[3] = point.Lng
+		}
+	}
+	return extent
 }
