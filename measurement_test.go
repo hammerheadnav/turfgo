@@ -80,7 +80,7 @@ func TestDistance(t *testing.T) {
 
 	Convey("Given a wrong unit, should throw error", t, func() {
 		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.97074218352032, -75.4590397138299}
+		point2 := &Point{39.123, -75.534}
 
 		_, err := Distance(point1, point2, "invalidUnit")
 		So(err, ShouldNotBeNil)
@@ -89,12 +89,23 @@ func TestDistance(t *testing.T) {
 
 	Convey("Should return correct distance", t, func() {
 		point1 := &Point{39.984, -75.343}
-		point2 := &Point{39.97074218352032, -75.4590397138299}
-		expected := 9.999999999999373
+		point2 := &Point{39.123, -75.534}
 
-		dist, err := Distance(point1, point2, "km")
-		So(err, ShouldBeNil)
-		So(dist, ShouldEqual, expected)
+		distMi, errM := Distance(point1, point2, "mi")
+		So(errM, ShouldBeNil)
+		So(distMi, ShouldEqual, 60.37218405837491)
+
+		distKm, errK := Distance(point1, point2, "km")
+		So(errK, ShouldBeNil)
+		So(distKm, ShouldEqual, 97.15957803131901)
+
+		distR, errR := Distance(point1, point2, "r")
+		So(errR, ShouldBeNil)
+		So(distR, ShouldEqual, 0.015245501024842149)
+
+		distD, errD := Distance(point1, point2, "d")
+		So(errD, ShouldBeNil)
+		So(distD, ShouldEqual, 0.8735028650863799)
 	})
 }
 
@@ -142,33 +153,45 @@ func TestAlong(t *testing.T) {
 
 func TestExtent(t *testing.T) {
 
-	Convey("Given an array of points, should return bounding box", t, func() {
-		point1 := &Point{114.175329, 22.2524}
-		point2 := &Point{114.170007, 22.267969}
-		point3 := &Point{114.200649, 22.274641}
-		point4 := &Point{114.186744, 22.265745}
-		points := []*Point{point1, point2, point3, point4}
+	Convey("Given different type of shapes, should return bounding box", t, func() {
+		point1 := &Point{0.5, 102.0}
+		points := []*Point{point1}
 
-		bBox := Extent(points)
-		So(bBox[0], ShouldEqual, 114.170007)
-		So(bBox[1], ShouldEqual, 22.2524)
-		So(bBox[2], ShouldEqual, 114.200649)
-		So(bBox[3], ShouldEqual, 22.274641)
+		lineString := []*Point{
+			&Point{-10.0, 102.0},
+			&Point{1.0, 103.0},
+			&Point{0.0, 104.0},
+			&Point{4.0, 130.0},
+		}
+
+		polygon := []*Point{
+			&Point{0.0, 20.0},
+			&Point{0.0, 101.0},
+			&Point{1.0, 101.0},
+			&Point{1.0, 100.0},
+			&Point{0.0, 100.0},
+		}
+
+		bBox := Extent(points, lineString, polygon)
+		So(bBox[0], ShouldEqual, 20)
+		So(bBox[1], ShouldEqual, -10)
+		So(bBox[2], ShouldEqual, 130)
+		So(bBox[3], ShouldEqual, 4)
 	})
 }
 
 func TestCenter(t *testing.T) {
 
 	Convey("Given an array of points, should return absolute center of points", t, func() {
-		point1 := &Point{-97.522259, 35.4691}
-		point2 := &Point{-97.502754, 35.463455}
-		point3 := &Point{-97.508269, 35.463245}
-		point4 := &Point{-97.516809, 35.465779}
-		point5 := &Point{-97.515372, 35.467072}
+		point1 := &Point{35.4691, -97.522259}
+		point2 := &Point{35.463455, -97.502754}
+		point3 := &Point{35.463245, -97.508269}
+		point4 := &Point{35.465779, -97.516809}
+		point5 := &Point{35.467072, -97.515372}
 		points := []*Point{point1, point2, point3, point4, point5}
 
 		point := Center(points)
-		So(point.Lat, ShouldEqual, -97.5125065)
-		So(point.Lng, ShouldEqual, 35.4661725)
+		So(point.Lat, ShouldEqual, 35.4661725)
+		So(point.Lng, ShouldEqual, -97.5125065)
 	})
 }

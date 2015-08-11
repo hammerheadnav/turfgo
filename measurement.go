@@ -53,8 +53,8 @@ func Bearing(point1, point2 *Point) float64 {
 // Center takes an array of points and returns the absolute center point of all features.
 func Center(points []*Point) *Point {
 	bBox := Extent(points)
-	lat := (bBox[0] + bBox[2]) / 2
-	lng := (bBox[1] + bBox[3]) / 2
+	lng := (bBox[0] + bBox[2]) / 2
+	lat := (bBox[1] + bBox[3]) / 2
 	return &Point{lat, lng}
 }
 
@@ -98,21 +98,25 @@ func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
 }
 
 // Extent takes a set of points, calculates the extent of all input points, and returns a bounding box.
+// Linestring and polygons can be represented as array of points.
 // Returns []float64 the bounding box of input given as an array in WSEN order (west, south, east, north)
-func Extent(points []*Point) []float64 {
+func Extent(shapes ...[]*Point) []float64 {
 	extent := []float64{INFINITY, INFINITY, -INFINITY, -INFINITY}
-	for _, point := range points {
-		if extent[0] > point.Lat {
-			extent[0] = point.Lat
-		}
-		if extent[1] > point.Lng {
-			extent[1] = point.Lng
-		}
-		if extent[2] < point.Lat {
-			extent[2] = point.Lat
-		}
-		if extent[3] < point.Lng {
-			extent[3] = point.Lng
+
+	for _, points := range shapes {
+		for _, point := range points {
+			if extent[0] > point.Lng {
+				extent[0] = point.Lng
+			}
+			if extent[1] > point.Lat {
+				extent[1] = point.Lat
+			}
+			if extent[2] < point.Lng {
+				extent[2] = point.Lng
+			}
+			if extent[3] < point.Lat {
+				extent[3] = point.Lat
+			}
 		}
 	}
 	return extent
