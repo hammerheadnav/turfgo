@@ -10,25 +10,26 @@ import (
 var unitError = "%s is not a valid unit. Allowed units are mi(miles), km(kilometers), d(degrees) and r(radians)"
 
 // Along takes a line and returns a point at a specified distance along the line.
-func Along(lineString []*Point, distance float64, unit string) (*Point, error) {
+func Along(lineString *LineString, distance float64, unit string) (*Point, error) {
 	var travelled float64
-	for i, point := range lineString {
-		if distance >= travelled && i == len(lineString)-1 {
+	points := lineString.getPoints()
+	for i, point := range points {
+		if distance >= travelled && i == len(points)-1 {
 			return point, nil
 		} else if travelled >= distance {
 			overshot := distance - travelled
 			if overshot == 0 {
 				return point, nil
 			}
-			direction := Bearing(lineString[i], lineString[i-1]) - 180
-			interpolated, err := Destination(lineString[i], overshot, direction, unit)
+			direction := Bearing(points[i], points[i-1]) - 180
+			interpolated, err := Destination(points[i], overshot, direction, unit)
 			if err != nil {
 				return nil, err
 			}
 			return interpolated, nil
 
 		} else {
-			t, err := Distance(lineString[i], lineString[i+1], unit)
+			t, err := Distance(points[i], points[i+1], unit)
 			if err != nil {
 				return nil, err
 			}
@@ -50,9 +51,9 @@ func Bearing(point1, point2 *Point) float64 {
 	return turfgoMath.RadToDegree(math.Atan2(a, b))
 }
 
-// Center takes an array of points and returns the absolute center point of all features.
-func Center(points []*Point) *Point {
-	bBox := Extent(points)
+// Center takes an array of points and returns the absolute center point of all points.
+func Center(shapes ...Geometry) *Point {
+	bBox := Extent(shapes...)
 	lng := (bBox[0] + bBox[2]) / 2
 	lat := (bBox[1] + bBox[3]) / 2
 	return &Point{lat, lng}
@@ -97,14 +98,13 @@ func Distance(point1 *Point, point2 *Point, unit string) (float64, error) {
 	return radius * c, nil
 }
 
-// Extent takes a set of points, calculates the extent of all input points, and returns a bounding box.
-// Linestring and polygons can be represented as array of points.
+// Extent Takes a set of features, calculates the extent of all input features, and returns a bounding box.
 // Returns []float64 the bounding box of input given as an array in WSEN order (west, south, east, north)
-func Extent(shapes ...[]*Point) []float64 {
-	extent := []float64{INFINITY, INFINITY, -INFINITY, -INFINITY}
+func Extent(shapes ...Geometry) []float64 {
+	extent := []float64{infinity, infinity, -infinity, -infinity}
 
-	for _, points := range shapes {
-		for _, point := range points {
+	for _, shape := range shapes {
+		for _, point := range shape.getPoints() {
 			if extent[0] > point.Lng {
 				extent[0] = point.Lng
 			}

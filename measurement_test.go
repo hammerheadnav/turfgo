@@ -114,9 +114,9 @@ func TestAlong(t *testing.T) {
 	Convey("Given a wrong unit, should throw error", t, func() {
 		point1 := &Point{39.984, -75.343}
 		point2 := &Point{39.97074218352032, -75.4590397138299}
-		points := []*Point{point1, point2}
+		lineString := NewLineString([]*Point{point1, point2})
 
-		_, err := Along(points, 13, "invalidUnit")
+		_, err := Along(lineString, 13, "invalidUnit")
 		So(err, ShouldNotBeNil)
 		So(err.Error(), ShouldEqual, fmt.Sprintf(unitError, "invalidUnit"))
 	})
@@ -128,10 +128,10 @@ func TestAlong(t *testing.T) {
 		point4 := &Point{38.885821, -77.025661}
 		point5 := &Point{38.889563, -77.021884}
 		point6 := &Point{38.892368, -77.019824}
-		points := []*Point{point1, point2, point3, point4, point5, point6}
+		lineString := NewLineString([]*Point{point1, point2, point3, point4, point5, point6})
 		expected := &Point{38.885335546214506, -77.02417351582903}
 
-		p, err := Along(points, 1, "mi")
+		p, err := Along(lineString, 1, "mi")
 		So(err, ShouldBeNil)
 		So(p, ShouldResemble, expected)
 	})
@@ -143,9 +143,9 @@ func TestAlong(t *testing.T) {
 		point4 := &Point{38.885821, -77.025661}
 		point5 := &Point{38.889563, -77.021884}
 		point6 := &Point{38.892368, -77.019824}
-		points := []*Point{point1, point2, point3, point4, point5, point6}
+		lineString := NewLineString([]*Point{point1, point2, point3, point4, point5, point6})
 
-		p, err := Along(points, 3, "mi")
+		p, err := Along(lineString, 3, "mi")
 		So(err, ShouldBeNil)
 		So(p, ShouldResemble, point6)
 	})
@@ -154,25 +154,31 @@ func TestAlong(t *testing.T) {
 func TestExtent(t *testing.T) {
 
 	Convey("Given different type of shapes, should return bounding box", t, func() {
-		point1 := &Point{0.5, 102.0}
-		points := []*Point{point1}
+		point := NewPoint(0.5, 102.0)
 
-		lineString := []*Point{
+		lineStringPoints := []*Point{
 			&Point{-10.0, 102.0},
 			&Point{1.0, 103.0},
 			&Point{0.0, 104.0},
 			&Point{4.0, 130.0},
 		}
+		lineString := NewLineString(lineStringPoints)
 
-		polygon := []*Point{
+		polygonOuterRing := NewLineString([]*Point{
 			&Point{0.0, 20.0},
 			&Point{0.0, 101.0},
+		})
+
+		polygonInnerRing := NewLineString([]*Point{
 			&Point{1.0, 101.0},
 			&Point{1.0, 100.0},
 			&Point{0.0, 100.0},
-		}
+		})
 
-		bBox := Extent(points, lineString, polygon)
+		polygonLinestrings := []*LineString{polygonOuterRing, polygonInnerRing}
+		polygon := NewPolygon(polygonLinestrings)
+
+		bBox := Extent(point, lineString, polygon)
 		So(bBox[0], ShouldEqual, 20)
 		So(bBox[1], ShouldEqual, -10)
 		So(bBox[2], ShouldEqual, 130)
@@ -188,9 +194,9 @@ func TestCenter(t *testing.T) {
 		point3 := &Point{35.463245, -97.508269}
 		point4 := &Point{35.465779, -97.516809}
 		point5 := &Point{35.467072, -97.515372}
-		points := []*Point{point1, point2, point3, point4, point5}
+		lineString := NewLineString([]*Point{point1, point2, point3, point4})
 
-		point := Center(points)
+		point := Center(lineString, point5)
 		So(point.Lat, ShouldEqual, 35.4661725)
 		So(point.Lng, ShouldEqual, -97.5125065)
 	})
