@@ -23,6 +23,19 @@ func Inside(point *Point, polygon PolygonI) bool {
 	return insidePoly
 }
 
+// Within takes a set of points and a set of polygons and returns the points that fall within the polygons.
+func Within(points []*Point, polygons []PolygonI) []*Point {
+	result := []*Point{}
+	for _, polygon := range polygons {
+		for _, point := range points {
+			if Inside(point, polygon) {
+				result = append(result, point)
+			}
+		}
+	}
+	return result
+}
+
 func inRing(point *Point, ring *LineString) bool {
 	isInside := false
 	ringPoints := ring.getPoints()

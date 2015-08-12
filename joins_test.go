@@ -128,3 +128,39 @@ func TestInside(t *testing.T) {
 		})
 	})
 }
+
+func TestWithin(t *testing.T) {
+	Convey("Given a point and a polygon", t, func() {
+		Convey("Should return points that fall in polygon", func() {
+			point1 := &Point{0, 0}
+			point2 := &Point{0, 100}
+			point3 := &Point{100, 100}
+			point4 := &Point{100, 0}
+			point5 := &Point{0, 0}
+			lineString := NewLineString([]*Point{point1, point2, point3, point4, point5})
+			polygon := NewPolygon([]*LineString{lineString})
+			pt := NewPoint(50, 50)
+			points := []*Point{pt}
+			result := Within(points, []PolygonI{polygon})
+			So(result, ShouldResemble, points)
+		})
+	})
+
+	Convey("Given multiple points and multiple polygons", t, func() {
+		Convey("Should return points that fall in polygons", func() {
+			lineString1 := NewLineString([]*Point{&Point{0, 0}, &Point{10, 0}, &Point{10, 10}, &Point{0, 10}, &Point{0, 0}})
+			lineString2 := NewLineString([]*Point{&Point{10, 0}, &Point{20, 10}, &Point{20, 20}, &Point{20, 0}, &Point{10, 0}})
+			polygon1 := NewPolygon([]*LineString{lineString1})
+			polygon2 := NewPolygon([]*LineString{lineString2})
+			point1 := NewPoint(1, 1)
+			point2 := NewPoint(1, 3)
+			point3 := NewPoint(14, 2)
+			point4 := NewPoint(13, 1)
+			point5 := NewPoint(19, 7)
+			point6 := NewPoint(100, 7)
+			points := []*Point{point1, point2, point3, point4, point5, point6}
+			result := Within(points, []PolygonI{polygon1, polygon2})
+			So(result, ShouldResemble, []*Point{point1, point2, point3, point4, point5})
+		})
+	})
+}
