@@ -15,6 +15,11 @@ type Geometry interface {
 	getPoints() []*Point
 }
 
+//PolygonI is geoJson geometry
+type PolygonI interface {
+	getPolygons() []*Polygon
+}
+
 //Point geojson type
 type Point struct {
 	Lat float64
@@ -89,6 +94,10 @@ func (p *Polygon) getPoints() []*Point {
 	return points
 }
 
+func (p *Polygon) getPolygons() []*Polygon {
+	return []*Polygon{p}
+}
+
 //NewPolygon creates a new polygon for given lineStrings
 func NewPolygon(lineStrings []*LineString) *Polygon {
 	return &Polygon{LineStrings: lineStrings}
@@ -105,6 +114,10 @@ func (p *MultiPolygon) getPoints() []*Point {
 		points = append(points, polygon.getPoints()...)
 	}
 	return points
+}
+
+func (p *MultiPolygon) getPolygons() []*Polygon {
+	return p.Polygons
 }
 
 //NewMultiPolygon creates a new multiPolygon for given polygons
