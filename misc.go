@@ -1,9 +1,10 @@
 package turfgo
 
 // PointOnLine takes a Point and a LineString and calculates the closest Point on the LineString.
-func PointOnLine(point *Point, lineString *LineString, units string) (*Point, float64, error) {
+func PointOnLine(point *Point, lineString *LineString, units string) (*Point, float64, int, error) {
 	closestPt := &Point{infinity, infinity}
 	closestDistance := float64(infinity)
+	index := -1
 
 	coords := lineString.Points
 	for i := 0; i < len(coords)-1; i++ {
@@ -11,7 +12,7 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 		stop := coords[i+1]
 		startDist, err := Distance(point, start, units)
 		if err != nil {
-			return nil, -1, err
+			return nil, -1, -1, err
 		}
 		stopDist, _ := Distance(point, stop, units)
 		direction := Bearing(start, stop)
@@ -28,17 +29,20 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 		if startDist < closestDistance {
 			closestPt = start
 			closestDistance = startDist
+			index = i
 		}
 		if stopDist < closestDistance {
 			closestPt = stop
 			closestDistance = stopDist
+			index = i
 		}
 		if intersectD < closestDistance {
 			closestPt = intersect
 			closestDistance = intersectD
+			index = i
 		}
 	}
-	return closestPt, closestDistance, nil
+	return closestPt, closestDistance, index, nil
 }
 
 func lineIntersects(line1Start *Point, line1End *Point, line2Start *Point, line2End *Point) *Point {
