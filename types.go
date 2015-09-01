@@ -2,6 +2,7 @@ package turfgo
 
 const (
 	infinity = 0x7FF0000000000000
+	none     = -1
 )
 
 //R is radius of earth
