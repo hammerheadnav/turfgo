@@ -38,7 +38,7 @@ func TestLineDiff(t *testing.T) {
 	})
 
 	// X X X X
-	Convey("Given non intersecting line segments, should give full line", t, func() {
+	Convey("Given full intersection, should give no line", t, func() {
 		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
 		points2 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
 		lineString1 := NewLineString(points1)
@@ -118,7 +118,7 @@ func TestLineDiff(t *testing.T) {
 		So(diffs[0], ShouldResemble, diff1)
 	})
 
-	// 0 X X 0 X X X X 0 0 0 0 0
+	// 0 X X 0 0 X X X 0 0 0 0 0
 	Convey("Given multiple overlap, should give correct result", t, func() {
 		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}, &Point{9, 5}, &Point{8, 5},
 			&Point{4, 5}, &Point{11, 7}, &Point{9, 2}, &Point{4, 9}, &Point{12, 21}, &Point{12, 7}, &Point{21, 7}}
@@ -145,11 +145,11 @@ func TestLineDiff(t *testing.T) {
 		lineString1 := NewLineString(points1)
 		lineString2 := NewLineString(points2)
 		diff1 := NewLineString([]*Point{&Point{1, 1}, &Point{2, 3}, &Point{4, 5}, &Point{9, 5}})
-		// diff2 := NewLineString([]*Point{&Point{4, 5}, &Point{11, 7}, &Point{9, 2}, &Point{4, 9}})
+		diff2 := NewLineString([]*Point{&Point{4, 5}, &Point{11, 7}, &Point{9, 2}, &Point{4, 9}, &Point{12, 21}})
 		diffs := LineDiff(lineString1, lineString2)
 		So(len(diffs), ShouldEqual, 2)
 		So(diffs[0], ShouldResemble, diff1)
-		// So(diffs[1], ShouldResemble, diff2)
+		So(diffs[1], ShouldResemble, diff2)
 	})
 }
 
@@ -211,4 +211,99 @@ func TestContainLocationPair(t *testing.T) {
 		found := containLocationPair(points, &Point{1, 1}, &Point{0, 0})
 		So(found, ShouldBeFalse)
 	})
+}
+
+func TestLineDiffPercentage(t *testing.T) {
+	Convey("Given empty first line, should return 0", t, func() {
+		points1 := []*Point{}
+		points2 := []*Point{&Point{1, 0}, &Point{1, 2}, &Point{2, 2}, &Point{4, 4}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 0)
+	})
+
+	Convey("Given empty second line, should return 100 percent", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		points2 := []*Point{}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 100)
+	})
+
+	// X X X X
+	Convey("Given full intersection, should give 0 percent", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		points2 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 0)
+	})
+
+	// 0 0 0 0
+	Convey("Given non intersecting line segments, should give 100 percentage", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		points2 := []*Point{&Point{1, 0}, &Point{1, 2}, &Point{2, 2}, &Point{4, 4}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 100)
+	})
+
+	// 0 X X 0
+	Convey("Given one overlap, should give correct result", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		points2 := []*Point{&Point{0, 1}, &Point{1, 1}, &Point{2, 3}, &Point{4, 4}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 50)
+	})
+
+	// 0 X X X
+	Convey("Given one overlap which proceed till end, should give correct result", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		points2 := []*Point{&Point{0, 1}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 25)
+	})
+
+	// X X 0 0
+	Convey("Given one overlap which start from beginning, should give correct result", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}}
+		points2 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 4}, &Point{4, 6}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldEqual, 50)
+	})
+
+	// 0 X X 0 0 X X X 0 0 0 0 0
+	Convey("Given multiple overlap, should give correct result", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}, &Point{9, 5}, &Point{8, 5},
+			&Point{4, 5}, &Point{11, 7}, &Point{9, 2}, &Point{4, 9}, &Point{12, 21}, &Point{12, 7}, &Point{21, 7}}
+		points2 := []*Point{&Point{0, 1}, &Point{1, 1}, &Point{2, 3}, &Point{4, 4}, &Point{6, 7}, &Point{8, 5},
+			&Point{4, 5}, &Point{11, 7}, &Point{13, 6}, &Point{12, 7}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldAlmostEqual, float64(8)/float64(13)*100)
+	})
+
+	//X X 0 % X X X 0 0 0 X X
+	Convey("Given multiple overlap which start and end with line, should give correct result", t, func() {
+		points1 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{2, 3}, &Point{4, 5}, &Point{9, 5}, &Point{8, 5},
+			&Point{4, 5}, &Point{11, 7}, &Point{9, 2}, &Point{4, 9}, &Point{12, 21}, &Point{12, 7}}
+		points2 := []*Point{&Point{0, 0}, &Point{1, 1}, &Point{12, 3}, &Point{4, 4}, &Point{9, 5}, &Point{8, 5},
+			&Point{4, 5}, &Point{21, 4}, &Point{13, 6}, &Point{12, 7}, &Point{12, 21}, &Point{12, 7}, &Point{23, 7}}
+		lineString1 := NewLineString(points1)
+		lineString2 := NewLineString(points2)
+		p := LineDiffPercentage(lineString1, lineString2)
+		So(p, ShouldAlmostEqual, float64(5)/float64(12)*100)
+	})
+
 }

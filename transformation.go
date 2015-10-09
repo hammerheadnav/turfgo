@@ -1,5 +1,7 @@
 package turfgo
 
+import "log"
+
 // LineDiff take two lines and gives an array of lines by subracting second from first. Single coordinate overlaps are ignored.
 // Line should not have duplicate values.
 func LineDiff(firstLine *LineString, secondLine *LineString) []*LineString {
@@ -12,6 +14,36 @@ func LineDiff(firstLine *LineString, secondLine *LineString) []*LineString {
 		}
 	}
 	return reduceDiffSegment(diffSegments)
+}
+
+// LineDiffPercentage take two lines and give the percentage of difference between first and second line with respect to first line.
+// Single coordinate overlaps are ignored. Line should not have duplicate values.
+func LineDiffPercentage(firstLine *LineString, secondLine *LineString) float64 {
+	totalPoints := len(firstLine.Points)
+	if totalPoints == 0 {
+		return 0
+	}
+
+	diff := LineDiff(firstLine, secondLine)
+	if len(diff) == 1 && totalPoints == len(diff[0].Points) {
+		return 100
+	}
+
+	diffPoints := 0
+	for _, line := range diff {
+		isStartingSegment := isEqualLocation(firstLine.Points[0], line.Points[0])
+		isEndingSegment := isEqualLocation(firstLine.Points[len(firstLine.Points)-1], line.Points[len(line.Points)-1])
+		diffPoints += len(line.Points)
+
+		if isStartingSegment || isEndingSegment {
+			diffPoints--
+		} else {
+			diffPoints -= 2
+		}
+		log.Printf("%d", diffPoints)
+	}
+	log.Printf("%d, %d", diffPoints, totalPoints)
+	return (float64(diffPoints) / float64(totalPoints)) * 100
 }
 
 func reduceDiffSegment(segments []*LineString) []*LineString {
