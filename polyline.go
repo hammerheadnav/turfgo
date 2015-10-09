@@ -1,41 +1,28 @@
 package turfgo
 
-import "math"
+import "github.com/twpayne/gopolyline/polyline"
 
-// Ported from https://github.com/mapbox/polyline/blob/master/src/polyline.js
-
+//EncodePolyline encodes given coordinates into a polyline
 func EncodePolyline(coordinates []*Point) string {
-	if len(coordinates) == 0 {
-		return ""
+	var flatC []float64
+	for i := 0; i < len(coordinates); i++ {
+		flatC = append(flatC, coordinates[i].Lat)
+		flatC = append(flatC, coordinates[i].Lng)
 	}
 
-	factor := math.Pow(10, 5)
-	output := encode(coordinates[0].Lat, factor) + encode(coordinates[0].Lng, factor)
-
-	for i := 1; i < len(coordinates); i++ {
-		a := coordinates[i]
-		b := coordinates[i-1]
-		output += encode(a.Lat-b.Lat, factor)
-		output += encode(a.Lng-b.Lng, factor)
-	}
-
-	return output
+	return polyline.Encode(flatC, 2)
 }
 
-func encode(oldCoordinate float64, factor float64) string {
-	coordinate := int(math.Floor(oldCoordinate*factor + 0.5))
-	coordinate = coordinate << 1
-
-	if coordinate < 0 {
-		coordinate = ^coordinate
+//DecodePolyline decodes given polyline and return coordinates
+func DecodePolyline(line string) ([]*Point, error) {
+	flatC, err := polyline.Decode(line, 2)
+	if err != nil {
+		return nil, err
 	}
-	output := ""
-	for coordinate >= 0x20 {
-		runeC := string((0x20 | (coordinate & 0x1f)) + 63)
-		output = output + runeC
-		coordinate >>= 5
+	var coordinates []*Point
+	for i := 0; i < len(flatC)/2; i++ {
+		point := &Point{Lat: flatC[2*i], Lng: flatC[2*i+1]}
+		coordinates = append(coordinates, point)
 	}
-	runeC := string(coordinate + 63)
-	output = output + runeC
-	return output
+	return coordinates, nil
 }

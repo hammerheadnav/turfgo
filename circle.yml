@@ -1,0 +1,24 @@
+machine:
+    environment:
+        GOPATH: "$HOME/gosrc/"
+        GO_SRC_ROOT: "$HOME/gosrc/src/"
+        IMPORT_PATH: "github.com/hammerheadnav/$CIRCLE_PROJECT_REPONAME"
+dependencies:
+    override:
+        - mkdir -p "$GO_SRC_ROOT/$IMPORT_PATH"
+        - cp -rf "$HOME/$CIRCLE_PROJECT_REPONAME" "$GO_SRC_ROOT/github.com/hammerheadnav/"
+        - (go get):
+            pwd:
+              ../gosrc/src/$IMPORT_PATH
+            
+        - (go build):
+            pwd:
+                ../gosrc/src/$IMPORT_PATH
+
+        - go get github.com/smartystreets/goconvey
+test:
+    override:
+        - (go test):
+            pwd:
+              ../gosrc/src/$IMPORT_PATH
+
