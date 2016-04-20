@@ -65,3 +65,89 @@ func TestPointOnLine(t *testing.T) {
 		So(index3, ShouldEqual, 3759)
 	})
 }
+
+func TestIsTriangleObtuse(t *testing.T) {
+	Convey("Given three sides of triangle", t, func() {
+		Convey("Should return true if triangle is obtuse", func() {
+			result := isAnyBaseAngleObtuse(NewPoint(0, 0), NewPoint(3, 0), NewPoint(5, 3))
+			So(result, ShouldBeTrue)
+		})
+
+		Convey("Should return false if triangle is not obtuse triangle", func() {
+			result := isAnyBaseAngleObtuse(NewPoint(0, 0), NewPoint(3, 0), NewPoint(2, 3))
+			So(result, ShouldBeFalse)
+		})
+	})
+}
+
+func TestTriangularProjection(t *testing.T) {
+	Convey("Should find the projection without bearing if previous point is nil and current point fall in middle", t, func() {
+		a := NewPoint(40.88969576429507, -74.02225255966187)
+		b := NewPoint(40.890660929502566, -74.02167320251465)
+		c := NewPoint(40.891504423701505, -74.02114748954773)
+		p := NewPoint(40.89128544066409, -74.02228474617003)
+		expectedProj := NewPoint(40.890925717667024, -74.02150817165644)
+		lineString := NewLineString([]*Point{a, b, c})
+		proj, dist, index, err := TriangularProjection(p, nil, lineString, "mi")
+		So(err, ShouldBeNil)
+		So(proj, ShouldResemble, expectedProj)
+		So(dist, ShouldAlmostEqual, 0.04758582953209436)
+		So(index, ShouldEqual, 1)
+	})
+
+	Convey("Should pass if previous point is given and bearing is within 45 degree of either side", t, func() {
+		a := NewPoint(40.88969576429507, -74.02225255966187)
+		b := NewPoint(40.890660929502566, -74.02167320251465)
+		c := NewPoint(40.891504423701505, -74.02114748954773)
+		p := NewPoint(40.89128544066409, -74.02228474617003)
+		p1 := NewPoint(40.89057171314116, -74.02269244194031)
+		expectedProj := NewPoint(40.890925717667024, -74.02150817165644)
+		lineString := NewLineString([]*Point{a, b, c})
+		proj, dist, index, err := TriangularProjection(p, p1, lineString, "mi")
+		So(err, ShouldBeNil)
+		So(proj, ShouldResemble, expectedProj)
+		So(dist, ShouldAlmostEqual, 0.04758582953209436)
+		So(index, ShouldEqual, 1)
+	})
+
+	Convey("Should pass if previous point is given and bearing is outside 45 degree of either side", t, func() {
+		a := NewPoint(40.88969576429507, -74.02225255966187)
+		b := NewPoint(40.890660929502566, -74.02167320251465)
+		c := NewPoint(40.891504423701505, -74.02114748954773)
+		p := NewPoint(40.89128544066409, -74.02228474617003)
+		p1 := NewPoint(40.891155672596184, -74.02328252792358)
+		lineString := NewLineString([]*Point{a, b, c})
+		proj, dist, index, err := TriangularProjection(p, p1, lineString, "mi")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "No Projection found")
+		So(proj, ShouldBeNil)
+		So(dist, ShouldEqual, -1)
+		So(index, ShouldEqual, -1)
+	})
+
+	Convey("Should fail if no projection on line", t, func() {
+		a := NewPoint(40.88969576429507, -74.02225255966187)
+		b := NewPoint(40.890660929502566, -74.02167320251465)
+		c := NewPoint(40.891504423701505, -74.02114748954773)
+		p := NewPoint(40.892404679685235, -74.02269244194031)
+		lineString := NewLineString([]*Point{a, b, c})
+		proj, dist, index, err := TriangularProjection(p, nil, lineString, "mi")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "No Projection found")
+		So(proj, ShouldBeNil)
+		So(dist, ShouldEqual, -1)
+		So(index, ShouldEqual, -1)
+	})
+
+	Convey("Should fail if not enough points on linestring", t, func() {
+		a := NewPoint(40.88969576429507, -74.02225255966187)
+		p := NewPoint(40.892404679685235, -74.02269244194031)
+		lineString := NewLineString([]*Point{a})
+		proj, dist, index, err := TriangularProjection(p, nil, lineString, "mi")
+		So(err, ShouldNotBeNil)
+		So(err.Error(), ShouldEqual, "No Projection found")
+		So(proj, ShouldBeNil)
+		So(dist, ShouldEqual, -1)
+		So(index, ShouldEqual, -1)
+	})
+}

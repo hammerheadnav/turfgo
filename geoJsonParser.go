@@ -29,6 +29,18 @@ func EncodeMultiPointsIntoFeature(points []*Point) *geojson.Feature {
 	return geojson.NewFeature(multiPoint, nil, nil)
 }
 
+func EncodeMultiPointsIntoLineString(points []*Point) *geojson.Feature {
+	var coordinates = make(geojson.Coordinates, len(points))
+	for i := range points {
+		var c geojson.Coordinate
+		c[0] = geojson.CoordType(points[i].Lng)
+		c[1] = geojson.CoordType(points[i].Lat)
+		coordinates[i] = c
+	}
+	lineString := geojson.NewLineString(coordinates)
+	return geojson.NewFeature(lineString, nil, nil)
+}
+
 func EncodeFeatureCollection(features []*geojson.Feature) *geojson.FeatureCollection {
 	return geojson.NewFeatureCollection(features)
 }

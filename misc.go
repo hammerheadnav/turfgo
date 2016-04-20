@@ -1,5 +1,13 @@
 package turfgo
 
+import (
+	"errors"
+
+	"github.com/hammerheadnav/turfgo/turfgoMath"
+)
+
+const invalidBearing = -1234.0
+
 // PointOnLine takes a Point and a LineString and calculates the closest Point on the LineString.
 func PointOnLine(point *Point, lineString *LineString, units string) (*Point, float64, int, error) {
 	closestPt := &Point{infinity, infinity}
@@ -19,7 +27,7 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 		perpendicularPt, _ := Destination(point, 1000, direction+90, units) // 1000 = gross
 		intersect := lineIntersects(point, perpendicularPt, start, stop)
 		if intersect == nil {
-			perpendicularPt, _ = Destination(point, 1000, direction+90, units)
+			perpendicularPt, _ = Destination(point, 1000, direction-90, units)
 			intersect = lineIntersects(point, perpendicularPt, start, stop)
 		}
 		intersectD := float64(infinity)
@@ -43,6 +51,32 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 		}
 	}
 	return closestPt, closestDistance, index, nil
+}
+
+// TriangularProjection calculate the projection of given point on the lineString, base angles for projection should be acute.
+// If bearing should also be considerd, pass in a previous point also, otherwise it should be nil
+func TriangularProjection(point *Point, previousPoint *Point, lineString *LineString, unit string) (*Point, float64, int, error) {
+	bearing := invalidBearing
+	if previousPoint != nil {
+		bearing = Bearing(previousPoint, point)
+	}
+	for i := 0; i < len(lineString.Points)-1; i++ {
+		start := lineString.Points[i]
+		end := lineString.Points[i+1]
+		if !isAnyBaseAngleObtuse(point, start, end) {
+			bearingLs := Bearing(start, end)
+			bearingDiff := bearing - bearingLs
+			if bearing != invalidBearing && (bearingDiff < -45 || bearingDiff > +45) {
+				continue
+			}
+			projection, distance, _, err := PointOnLine(point, NewLineString([]*Point{start, end}), unit)
+			if err != nil {
+				return nil, -1, -1, err
+			}
+			return projection, distance, i, nil
+		}
+	}
+	return nil, -1, -1, errors.New("No Projection found")
 }
 
 func lineIntersects(line1Start *Point, line1End *Point, line2Start *Point, line2End *Point) *Point {
@@ -79,4 +113,23 @@ func lineIntersects(line1Start *Point, line1End *Point, line2Start *Point, line2
 		return &Point{lat, lng}
 	}
 	return nil
+}
+
+func isAnyBaseAngleObtuse(point *Point, start *Point, end *Point) bool {
+	alpha, _ := Distance(point, start, "mi")
+	beta, _ := Distance(point, end, "mi")
+	gamma, _ := Distance(start, end, "mi")
+	if gamma == 0 {
+		return true
+	}
+	if turfgoMath.IsEqualFloat(alpha+beta, gamma, turfgoMath.TwelveDecimalPlaces) {
+		return false
+	}
+
+	cosineA := ((alpha * alpha) + (gamma * gamma) - (beta * beta)) / (2 * alpha * gamma)
+	cosineB := ((beta * beta) + (gamma * gamma) - (alpha * alpha)) / (2 * beta * gamma)
+	if cosineA < 0 || cosineB < 0 {
+		return true
+	}
+	return false
 }

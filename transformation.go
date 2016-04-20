@@ -1,7 +1,5 @@
 package turfgo
 
-import "log"
-
 // LineDiff take two lines and gives an array of lines by subracting second from first. Single coordinate overlaps are ignored.
 // Line should not have duplicate values.
 func LineDiff(firstLine *LineString, secondLine *LineString) []*LineString {
@@ -40,9 +38,7 @@ func LineDiffPercentage(firstLine *LineString, secondLine *LineString) float64 {
 		} else {
 			diffPoints -= 2
 		}
-		log.Printf("%d", diffPoints)
 	}
-	log.Printf("%d, %d", diffPoints, totalPoints)
 	return (float64(diffPoints) / float64(totalPoints)) * 100
 }
 

@@ -8,6 +8,7 @@ const (
 //R is radius of earth
 var R = map[string]float64{"mi": 3960,
 	"km": 6373,
+	"m":  6373000,
 	"d":  57.2957795,
 	"r":  1}
 
