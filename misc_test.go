@@ -25,8 +25,8 @@ func TestPointOnLine(t *testing.T) {
 	})
 
 	Convey("Given a point and a lineString, should calculate a point on line", t, func() {
-		expected := &Point{38.88079693955019, -77.03031748983136}
-		exptectedDistance := 0.4263205659547497
+		expected := &Point{38.881361463229524, -77.02996941477018}
+		exptectedDistance := 0.4241146325840119
 		result, distance, index, _ := PointOnLine(pointOutsideLine, lineString, "mi")
 		So(result, ShouldResemble, expected)
 		So(distance, ShouldEqual, exptectedDistance)
@@ -37,8 +37,8 @@ func TestPointOnLine(t *testing.T) {
 		gj1, _ := ioutil.ReadFile("./testFiles/pointOnLine/line1.geojson")
 		ls1, _ := DecodeLineStringFromFeatureJSON(gj1)
 		p1 := &Point{22.254624939561698, -97.79617309570312}
-		expected1 := &Point{22.245731173797786, -97.83538404669022}
-		exptectedDistance1 := 2.5824950936100484
+		expected1 := &Point{22.247393614241208, -97.83572934173806}
+		exptectedDistance1 := 2.5792333253307405
 		result1, distance1, index1, _ := PointOnLine(p1, ls1, "mi")
 		So(result1, ShouldResemble, expected1)
 		So(distance1, ShouldAlmostEqual, exptectedDistance1)
@@ -86,12 +86,12 @@ func TestTriangularProjection(t *testing.T) {
 		b := NewPoint(40.890660929502566, -74.02167320251465)
 		c := NewPoint(40.891504423701505, -74.02114748954773)
 		p := NewPoint(40.89128544066409, -74.02228474617003)
-		expectedProj := NewPoint(40.890925717667024, -74.02150817165644)
+		expectedProj := NewPoint(40.89099374267134, -74.02146577465254)
 		lineString := NewLineString([]*Point{a, b, c})
 		proj, dist, index, err := TriangularProjection(p, nil, lineString, "mi")
 		So(err, ShouldBeNil)
 		So(proj, ShouldResemble, expectedProj)
-		So(dist, ShouldAlmostEqual, 0.04758582953209436)
+		So(dist, ShouldAlmostEqual, 0.047301111679236334)
 		So(index, ShouldEqual, 1)
 	})
 
@@ -101,12 +101,12 @@ func TestTriangularProjection(t *testing.T) {
 		c := NewPoint(40.891504423701505, -74.02114748954773)
 		p := NewPoint(40.89128544066409, -74.02228474617003)
 		p1 := NewPoint(40.89057171314116, -74.02269244194031)
-		expectedProj := NewPoint(40.890925717667024, -74.02150817165644)
+		expectedProj := NewPoint(40.89099374267134, -74.02146577465254)
 		lineString := NewLineString([]*Point{a, b, c})
 		proj, dist, index, err := TriangularProjection(p, p1, lineString, "mi")
 		So(err, ShouldBeNil)
 		So(proj, ShouldResemble, expectedProj)
-		So(dist, ShouldAlmostEqual, 0.04758582953209436)
+		So(dist, ShouldAlmostEqual, 0.047301111679236334)
 		So(index, ShouldEqual, 1)
 	})
 

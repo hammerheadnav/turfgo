@@ -2,6 +2,7 @@ package turfgo
 
 import (
 	"errors"
+	"math"
 
 	"github.com/hammerheadnav/turfgo/turfgoMath"
 )
@@ -24,12 +25,11 @@ func PointOnLine(point *Point, lineString *LineString, units string) (*Point, fl
 		}
 		stopDist, _ := Distance(point, stop, units)
 		direction := Bearing(start, stop)
-		perpendicularPt, _ := Destination(point, 1000, direction+90, units) // 1000 = gross
-		intersect := lineIntersects(point, perpendicularPt, start, stop)
-		if intersect == nil {
-			perpendicularPt, _ = Destination(point, 1000, direction-90, units)
-			intersect = lineIntersects(point, perpendicularPt, start, stop)
-		}
+		height := math.Max(stopDist, startDist)
+
+		perpendicularPt1, _ := Destination(point, height, direction+90, units)
+		perpendicularPt2, _ := Destination(point, height, direction-90, units)
+		intersect := lineIntersects(perpendicularPt1, perpendicularPt2, start, stop)
 		intersectD := float64(infinity)
 		if intersect != nil {
 			intersectD, _ = Distance(point, intersect, units)
