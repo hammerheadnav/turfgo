@@ -201,3 +201,51 @@ func TestCenter(t *testing.T) {
 		So(point.Lng, ShouldEqual, -97.5125065)
 	})
 }
+
+func TestOverlap(t *testing.T) {
+	Convey("Should return false if boxes doesn't overlap", t, func() {
+		// b2 above b1
+		b1 := []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
+		b2 := []float64{3.4716796874999996, 32.24997445586331, 8.876953125, 35.88905007936091}
+		b, err := Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeFalse)
+
+		// b2 on left of b1
+		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
+		b2 = []float64{-12.2197265625, 28.24997445586331, -2.876953125, 39.88905007936091}
+		b, err = Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeFalse)
+
+		// b2 below b1
+		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
+		b2 = []float64{-12.2197265625, 2.24997445586331, 23.876953125, 15.88905007936091}
+		b, err = Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeFalse)
+
+		// b2 on right of b1
+		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
+		b2 = []float64{15.2197265625, 18.24997445586331, 23.876953125, 29.88905007936091}
+		b, err = Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeFalse)
+	})
+
+	Convey("Should return true if boxes overlap", t, func() {
+		// overlap where a point is inside either of the bbox
+		b1 := []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
+		b2 := []float64{-2.4716796874999996, 15.24997445586331, 8.876953125, 21.88905007936091}
+		b, err := Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeTrue)
+
+		// overlap where no point of either bbox reside inside any bbox
+		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
+		b2 = []float64{-4.2197265625, 21.24997445586331, 26.876953125, 24.88905007936091}
+		b, err = Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeTrue)
+	})
+}

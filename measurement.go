@@ -1,6 +1,7 @@
 package turfgo
 
 import (
+	"errors"
 	"fmt"
 	"math"
 
@@ -120,4 +121,33 @@ func Extent(shapes ...Geometry) []float64 {
 		}
 	}
 	return extent
+}
+
+// Overlap takes two bounding box and returns true if there is an overlap.
+// The order of values in array is WSEN(west, south , east, north)
+func Overlap(b1 []float64, b2 []float64) (bool, error) {
+	if len(b1) != 4 || len(b2) != 4 {
+		return false, errors.New("Invalid bbox")
+	}
+	w1, s1, e1, n1 := b1[0], b1[1], b1[2], b1[3]
+	w2, s2, e2, n2 := b2[0], b2[1], b2[2], b2[3]
+
+	// b2 is left of b1
+	if w1 > e2 {
+		return false, nil
+	}
+	// b2 is right of b1
+	if e1 < w2 {
+		return false, nil
+	}
+	// b2 is above b1
+	if n1 < s2 {
+		return false, nil
+	}
+	// b2 is below b1
+	if s1 > n2 {
+		return false, nil
+	}
+
+	return true, nil
 }
