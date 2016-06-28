@@ -59,12 +59,18 @@ func TriangularProjection(point *Point, previousPoint *Point, lineString *LineSt
 	bearing := invalidBearing
 	if previousPoint != nil {
 		bearing = Bearing(previousPoint, point)
+		for bearing < 0 {
+			bearing += 360
+		}
 	}
 	for i := 0; i < len(lineString.Points)-1; i++ {
 		start := lineString.Points[i]
 		end := lineString.Points[i+1]
 		if !isAnyBaseAngleObtuse(point, start, end) {
 			bearingLs := Bearing(start, end)
+			for bearingLs < 0 {
+				bearingLs += 360
+			}
 			bearingDiff := bearing - bearingLs
 			if bearing != invalidBearing && (bearingDiff < -45 || bearingDiff > +45) {
 				continue

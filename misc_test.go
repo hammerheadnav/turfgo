@@ -150,4 +150,18 @@ func TestTriangularProjection(t *testing.T) {
 		So(dist, ShouldEqual, -1)
 		So(index, ShouldEqual, -1)
 	})
+
+	Convey("Should pass if previous point is given and bearings are near 180", t, func() {
+		a := NewPoint(12.992734807875454, 80.252972)
+		b := NewPoint(12.99245733348597, 80.25298118591307)
+		p := NewPoint(12.992617473880916, 80.25296505845765)
+		p1 := NewPoint(12.992492785541987, 80.25295291147245)
+		expectedProj := NewPoint(12.992493636372885, 80.25297998408985)
+		lineString := NewLineString([]*Point{a, b})
+		proj, dist, index, err := TriangularProjection(p1, p, lineString, "mi")
+		So(err, ShouldBeNil)
+		So(proj, ShouldResemble, expectedProj)
+		So(dist, ShouldAlmostEqual, 0.001824171398145269)
+		So(index, ShouldEqual, 0)
+	})
 }
