@@ -254,7 +254,7 @@ func TestSurround(t *testing.T) {
 
 	Convey("Given a point and bbox width, should return a bbox with given width and the point as its center", t, func() {
 		point := &Point{35.4691, -97.522259}
-		width := 500.0
+		width := 250.0
 
 		bBox := Surround(point, width)
 
