@@ -249,3 +249,30 @@ func TestOverlap(t *testing.T) {
 		So(b, ShouldBeTrue)
 	})
 }
+
+func TestSurround(t *testing.T) {
+
+	Convey("Given a point and bbox width, should return a bbox with given width and the point as its center", t, func() {
+		point := &Point{35.4691, -97.522259}
+		width := 500.0
+
+		bBox := Surround(point, width)
+
+		So(bBox[0], ShouldEqual, 35.466852401556835)
+		So(bBox[1], ShouldEqual, -97.52501872443347)
+		So(bBox[2], ShouldEqual, 35.47134759844316)
+		So(bBox[3], ShouldEqual, -97.51949927556655)
+	})
+
+	Convey("Given a point and bbox width as zero, should return the same point as bbox", t, func() {
+		point := &Point{35.4691, -97.522259}
+		width := 0.0
+
+		bBox := Surround(point, width)
+
+		So(bBox[0], ShouldEqual, 35.4691)
+		So(bBox[1], ShouldEqual, -97.522259)
+		So(bBox[2], ShouldEqual, 35.4691)
+		So(bBox[3], ShouldEqual, -97.522259)
+	})
+}

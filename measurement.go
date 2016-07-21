@@ -151,3 +151,14 @@ func Overlap(b1 []float64, b2 []float64) (bool, error) {
 
 	return true, nil
 }
+
+// Surround Takes a point and a width, calculates the bounding box of the given width with the point as its centre.
+// Returns []float64 the bounding box of input given as an array in WSEN order (west, south, east, north)
+func Surround(point *Point, width float64) []float64 {
+	bottomLeft := translate(point, -width/2, -width/2)
+	topRight := translate(point, width/2, width/2)
+
+	bbox := []float64{bottomLeft.Lat, bottomLeft.Lng, topRight.Lat, topRight.Lng}
+
+	return bbox
+}
