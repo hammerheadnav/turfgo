@@ -241,6 +241,13 @@ func TestOverlap(t *testing.T) {
 		So(err, ShouldBeNil)
 		So(b, ShouldBeTrue)
 
+		// overlap where a bbox encloses another bbox
+		b1 = []float64{13.078112803113676, 80.26982402002491, 13.087103196886325, 80.27905397997509}
+		b2 = []float64{13.082897, 80.274340, 13.082769, 80.273581}
+		b, err = Overlap(b1, b2)
+		So(err, ShouldBeNil)
+		So(b, ShouldBeTrue)
+
 		// overlap where no point of either bbox reside inside any bbox
 		b1 = []float64{-0.2197265625, 19.31114335506464, 13.447265624999998, 28.304380682962783}
 		b2 = []float64{-4.2197265625, 21.24997445586331, 26.876953125, 24.88905007936091}
@@ -258,10 +265,10 @@ func TestSurround(t *testing.T) {
 
 		bBox := Surround(point, width)
 
-		So(bBox[0], ShouldEqual, 80.2622657295878)
-		So(bBox[1], ShouldEqual, 13.040144803113675)
-		So(bBox[2], ShouldEqual, 80.2714942704122)
-		So(bBox[3], ShouldEqual, 13.049135196886324)
+		So(bBox[0], ShouldEqual, 13.040144803113675)
+		So(bBox[1], ShouldEqual, 80.2622657295878)
+		So(bBox[2], ShouldEqual, 13.049135196886324)
+		So(bBox[3], ShouldEqual, 80.2714942704122)
 	})
 
 	Convey("Given a point and bbox width as zero, should return the same point as bbox", t, func() {
@@ -270,9 +277,9 @@ func TestSurround(t *testing.T) {
 
 		bBox := Surround(point, width)
 
-		So(bBox[0], ShouldEqual, -97.522259)
-		So(bBox[1], ShouldEqual, 35.4691)
-		So(bBox[2], ShouldEqual, -97.522259)
-		So(bBox[3], ShouldEqual, 35.4691)
+		So(bBox[0], ShouldEqual, 35.4691)
+		So(bBox[1], ShouldEqual, -97.522259)
+		So(bBox[2], ShouldEqual, 35.4691)
+		So(bBox[3], ShouldEqual, -97.522259)
 	})
 }
