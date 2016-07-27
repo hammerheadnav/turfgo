@@ -158,7 +158,7 @@ func Surround(point *Point, width float64) []float64 {
 	bottomLeft := translate(point, -width/2, -width/2)
 	topRight := translate(point, width/2, width/2)
 
-	bbox := []float64{bottomLeft.Lat, bottomLeft.Lng, topRight.Lat, topRight.Lng}
+	bbox := []float64{bottomLeft.Lng, bottomLeft.Lat, topRight.Lng, topRight.Lat}
 
 	return bbox
 }
